@@ -1,3 +1,5 @@
+use std::fs::Permissions;
+
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -10,7 +12,9 @@ use osmo_bindings_test::OsmosisModule;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, IsFrozenResponse, QueryMsg, SudoMsg};
-use crate::state::{Config, CONFIG, MINTER_ALLOWANCES};
+use crate::state::{
+    Config, BLACKLISTED_ADDRESSES, BLACKLISTER_ALLOWANCES, CONFIG, MINTER_ALLOWANCES,
+};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:cw-usdc";
@@ -55,6 +59,9 @@ pub fn execute(
         ExecuteMsg::Mint { to_address, amount } => {
             execute_mint(deps, env, info, to_address, amount)
         } // ExecuteMsg::Burn { amount } => try_reset(deps, info, count),
+        ExecuteMsg::Blacklist { address, status } => {
+            execute_blacklist(deps, env, info, address, status)
+        }
     }
 }
 
@@ -65,11 +72,6 @@ pub fn execute_mint(
     to_address: String,
     amount: Uint128,
 ) -> Result<Response, ContractError> {
-    // STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-    //     state.count += 1;
-    //     Ok(state)
-    // })?;
-
     deps.api.addr_validate(&to_address)?;
     let denom = query_denom(deps.as_ref())?;
 
@@ -89,11 +91,36 @@ pub fn execute_mint(
     let mint_tokens_msg =
         OsmosisMsg::mint_contract_tokens(denom, amount, env.contract.address.into_string());
 
+    // TODO send tokens to to_address
+
     let res = Response::new()
         .add_attribute("method", "mint_tokens")
         .add_message(mint_tokens_msg);
 
     Ok(Response::new().add_attribute("method", "try_increment"))
+}
+
+pub fn execute_blacklist(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    address: String,
+    status: bool,
+) -> Result<Response, ContractError> {
+    let addr = deps.api.addr_validate(&address)?;
+    let denom = query_denom(deps.as_ref())?;
+
+    let permitted = BLACKLISTER_ALLOWANCES.load(deps.storage, info.sender)?;
+
+    if permitted == false {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    BLACKLISTED_ADDRESSES.update(deps.storage, addr, |current_status| -> StdResult<bool> {
+        Ok(status)
+    })?;
+
+    Ok(Response::new().add_attribute("method", "blacklist"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -109,33 +136,19 @@ pub fn beforesend_hook(
     to: String,
     amount: Vec<Coin>,
 ) -> Result<Response, ContractError> {
-    // STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-    //     state.count += 1;
-    //     Ok(state)
-    // })?;
+    let config = CONFIG.load(deps.storage)?;
 
-    Ok(Response::new().add_attribute("method", "try_increment"))
+    let from_address = deps.api.addr_validate(&from)?;
+    let to_address = deps.api.addr_validate(&to)?;
+
+    if config.is_frozen {
+        return Err(ContractError::Frozen {});
+    }
+
+    let from_blacklist_status = BLACKLISTED_ADDRESSES.may_load(deps.storage, from_address)?;
+
+    Ok(Response::new().add_attribute("method", "beforesend_hook"))
 }
-
-// pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
-//     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-//         state.count += 1;
-//         Ok(state)
-//     })?;
-
-//     Ok(Response::new().add_attribute("method", "try_increment"))
-// }
-
-// pub fn try_reset(deps: DepsMut, info: MessageInfo, count: i32) -> Result<Response, ContractError> {
-//     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-//         if info.sender != state.owner {
-//             return Err(ContractError::Unauthorized {});
-//         }
-//         state.count = count;
-//         Ok(state)
-//     })?;
-//     Ok(Response::new().add_attribute("method", "reset"))
-// }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
