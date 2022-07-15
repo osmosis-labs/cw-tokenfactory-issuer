@@ -1,26 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "QueryMsg",
-  "oneOf": [
+  "anyOf": [
     {
       "type": "object",
       "required": [
-        "is_frozen"
+        "get_count"
       ],
       "properties": {
-        "is_frozen": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "denom"
-      ],
-      "properties": {
-        "denom": {
+        "get_count": {
           "type": "object"
         }
       },

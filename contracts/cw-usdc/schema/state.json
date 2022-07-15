@@ -1,18 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Config",
+  "title": "State",
   "type": "object",
   "required": [
-    "denom",
-    "is_frozen",
+    "count",
     "owner"
   ],
   "properties": {
-    "denom": {
-      "type": "string"
-    },
-    "is_frozen": {
-      "type": "boolean"
+    "count": {
+      "type": "integer",
+      "format": "int32"
     },
     "owner": {
       "$ref": "#/definitions/Addr"
