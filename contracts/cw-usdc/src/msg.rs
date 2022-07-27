@@ -10,16 +10,43 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    ChangeTokenFactoryAdmin { new_admin: String },
-    ChangeContractOwner { new_owner: String },
-    SetMinter { address: String, allowance: Uint128 },
-    SetBurner { address: String, allowance: Uint128 },
-    SetBlacklister { address: String, status: bool },
-    SetFreezer { address: String, status: bool },
-    Mint { to_address: String, amount: Uint128 },
-    Burn { amount: Uint128 },
-    Blacklist { address: String, status: bool },
-    Freeze { status: bool },
+    ChangeTokenFactoryAdmin {
+        new_admin: String,
+    },
+    ChangeContractOwner {
+        new_owner: String,
+    },
+    SetMinter {
+        address: String,
+        allowance: Uint128,
+    },
+    SetBurner {
+        address: String,
+        allowance: Uint128,
+    },
+    SetBlacklister {
+        address: String,
+        status: bool,
+    },
+    SetFreezer {
+        address: String,
+        status: bool,
+    },
+    Mint {
+        to_address: String,
+        amount: Uint128,
+    },
+    Burn {
+        from_address: String,
+        amount: Uint128,
+    },
+    Blacklist {
+        address: String,
+        status: bool,
+    },
+    Freeze {
+        status: bool,
+    },
 }
 
 /// SudoMsg is only exposed for internal Cosmos SDK modules to call.
@@ -45,45 +72,35 @@ pub enum QueryMsg {
     /// Owner returns the owner of the contract. Response: OwnerResponse
     Owner {},
     /// Allowance returns the allowance of the specified address. Response: AllowanceResponse
-    BurnAllowance {
-        address: String,
-    },
+    BurnAllowance { address: String },
     /// Allowances Enumerates over all allownances. Response: Vec<AllowanceResponse>
     BurnAllowances {
         start_after: Option<String>,
         limit: Option<u32>,
     },
     /// Allowance returns the allowance of the specified user. Response: AllowanceResponse
-    MintAllowance {
-        address: String,
-    },
+    MintAllowance { address: String },
     /// Allowances Enumerates over all allownances. Response: Vec<AllowanceResponse>
     MintAllowances {
         start_after: Option<String>,
         limit: Option<u32>,
     },
     /// IsBlacklisted returns wether the user is blacklisted or not. Response: StatusResponse
-    IsBlacklisted {
-        address: String,
-    },
+    IsBlacklisted { address: String },
     /// Blacklistees enumerates over all addresses on the blacklist. Response: BlacklisteesResponse
     Blacklistees {
         start_after: Option<String>,
         limit: Option<u32>,
     },
     /// IsBlacklister returns if the addres has blacklister privileges. Response: StatusResponse
-    IsBlacklister {
-        address: String,
-    },
+    IsBlacklister { address: String },
     /// Blacklisters Enumerates over all the addresses with blacklister privileges. Response: BlacklisterAllowancesResponse
     BlacklisterAllowances {
         start_after: Option<String>,
         limit: Option<u32>,
     },
     /// IsFreezer returns whether the address has freezer status. Response: StatusResponse
-    IsFreezer {
-        address: String,
-    },
+    IsFreezer { address: String },
     /// FreezerAllowances enumerates over all freezer addresses. Response: FreezerAllowancesResponse
     FreezerAllowances {
         start_after: Option<String>,

@@ -51,7 +51,10 @@ pub fn execute(
         ExecuteMsg::Mint { to_address, amount } => {
             execute::mint(deps, env, info, to_address, amount)
         }
-        ExecuteMsg::Burn { amount } => execute::burn(deps, info, amount),
+        ExecuteMsg::Burn {
+            from_address,
+            amount,
+        } => execute::burn(deps, info, from_address, amount),
         ExecuteMsg::Blacklist { address, status } => {
             execute::blacklist(deps, info, address, status)
         }
