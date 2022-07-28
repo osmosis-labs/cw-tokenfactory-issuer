@@ -61,7 +61,7 @@ pub fn burn(
     from_address: String,
     amount: Uint128,
 ) -> Result<Response<OsmosisMsg>, ContractError> {
-    // validate that to_address is a valid address
+    // validate that from_address is a valid address
     deps.api.addr_validate(&from_address)?;
 
     // don't allow burning of 0 coins
