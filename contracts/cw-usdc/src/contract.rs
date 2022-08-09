@@ -76,6 +76,9 @@ pub fn execute(
         ExecuteMsg::SetFreezer { address, status } => {
             execute::set_freezer(deps, info, address, status)
         }
+        ExecuteMsg::SetSupplyOffsetAddress { address, status } => {
+            execute::set_supply_offset_address(deps, env, info, address, status)
+        }
     }
 }
 

@@ -1,12 +1,17 @@
-use cosmwasm_std::{coins, BankMsg, DepsMut, Env, MessageInfo, Response, StdResult, Uint128};
+use cosmwasm_std::{
+    coins, BankMsg, BankQuery, DepsMut, Env, MessageInfo, QuerierWrapper, Response, StdResult,
+    Uint128,
+};
 use osmo_bindings::OsmosisMsg;
 
 use crate::error::ContractError;
 use crate::helpers::{check_bool_allowance, check_is_contract_owner};
 use crate::state::{
     Config, BLACKLISTED_ADDRESSES, BLACKLISTER_ALLOWANCES, BURNER_ALLOWANCES, CONFIG,
-    FREEZER_ALLOWANCES, MINTER_ALLOWANCES,
+    FREEZER_ALLOWANCES, MINTER_ALLOWANCES, SUPPLY_OFFSET_ADDRESSES,
 };
+
+use osmosis_std::types::osmosis::tokenfactory::v1beta1::MsgSetBeforeSendHook;
 
 pub fn mint(
     deps: DepsMut,
@@ -218,6 +223,72 @@ pub fn set_minter(
         .add_attribute("action", "set_minter")
         .add_attribute("minter", address)
         .add_attribute("amount", allowance))
+}
+
+pub fn set_supply_offset_address(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    address: String,
+    status: bool,
+) -> Result<Response<OsmosisMsg>, ContractError> {
+    // Only allow current contract owner to set address_supply_offsetter permission
+    check_is_contract_owner(deps.as_ref(), info.sender)?;
+
+    let denom = CONFIG.load(deps.storage)?.denom;
+
+    enum ChangeType {
+        Add,
+        Remove,
+        NoOp,
+    }
+
+    let current_status =
+        SUPPLY_OFFSET_ADDRESSES.may_load(deps.storage, &deps.api.addr_validate(&address)?)?;
+
+    // let change_type = ChangeType;
+
+    let change_type = match current_status {
+        Some(true) => {
+            if status == true {
+                ChangeType::NoOp
+            } else {
+                ChangeType::Remove
+            }
+        }
+        _ => {
+            if status == true {
+                ChangeType::Add
+            } else {
+                ChangeType::NoOp
+            }
+        }
+    };
+
+    match change_type {
+        ChangeType::NoOp => (),
+        ChangeType::Add => {
+            let current_balance = deps.querier.query_balance(address, denom)?;
+
+            MsgSetBeforeSendHook {
+                sender: env.contract.address.into_string(),
+                denom: denom,
+            }
+
+            // QuerierWrapper::query_balance(&self, address, denom);
+            // TODO: Creat Supply offset msg
+        }
+    }
+
+    // set freezer status
+    // NOTE: Does not check if new status is same as old status
+    SUPPLY_OFFSET_ADDRESSES.save(deps.storage, &deps.api.addr_validate(&address)?, &status)?;
+
+    // return OK
+    Ok(Response::new()
+        .add_attribute("action", "set_freezer")
+        .add_attribute("freezer", address)
+        .add_attribute("status", status.to_string()))
 }
 
 pub fn freeze(

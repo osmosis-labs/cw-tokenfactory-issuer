@@ -35,8 +35,10 @@ cw-storage-plus = "0.13.2"
 cw2 = "0.13.2"
 schemars = "0.8.8"
 serde = { version = "1.0.137", default-features = false, features = ["derive"] }
+prost = "0.10.4"
 thiserror = { version = "1.0.31" }
 osmo-bindings = { git = "https://github.com/osmosis-labs/bindings", branch = "main" }
+osmosis-std = { git = "https://github.com/osmosis-labs/osmosis-rust", branch = "fullpowered-tokenfactory" }
 # osmo-bindings-test = { git = "https://github.com/osmosis-labs/bindings", branch = "main" }
 # cw-paginate = { git = "https://github.com/DA0-DA0/dao-contracts", branch = "main" }
 

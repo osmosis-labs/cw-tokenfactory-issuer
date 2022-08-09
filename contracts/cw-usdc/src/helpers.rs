@@ -4,6 +4,8 @@ use cw_storage_plus::Map;
 use crate::state::{BLACKLISTED_ADDRESSES, CONFIG};
 use crate::ContractError;
 
+// use osmo_bindings;
+
 pub fn build_denom(creator: &Addr, subdenom: &str) -> Result<String, ContractError> {
     // Minimum validation checks on the full denom.
     // https://github.com/cosmos/cosmos-sdk/blob/2646b474c7beb0c93d4fafd395ef345f41afc251/types/coin.go#L706-L711

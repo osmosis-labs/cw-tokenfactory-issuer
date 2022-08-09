@@ -1,5 +1,5 @@
-use cosmwasm_std::{coin, coins, from_binary, Addr, DepsMut, Uint128};
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
+use cosmwasm_std::{coin, coins, from_binary, Addr, DepsMut, Uint128};
 
 use crate::contract;
 use crate::error::ContractError;

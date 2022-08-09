@@ -19,3 +19,4 @@ pub const MINTER_ALLOWANCES: Map<&Addr, Uint128> = Map::new("minter_allowances")
 pub const BURNER_ALLOWANCES: Map<&Addr, Uint128> = Map::new("burner_allowances");
 pub const BLACKLISTER_ALLOWANCES: Map<&Addr, bool> = Map::new("blacklister_allowances");
 pub const FREEZER_ALLOWANCES: Map<&Addr, bool> = Map::new("freezer_allowances");
+pub const SUPPLY_OFFSET_ADDRESSES: Map<&Addr, bool> = Map::new("supply_offset_addresses");
