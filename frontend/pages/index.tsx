@@ -1,34 +1,34 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
-import { useCount } from "../api/counter";
+import { useDenom } from "../api/counter";
 import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
-  const { count, error, increase } = useCount();
+  const { denom, error } = useDenom();
   const [isLoading, setLoading] = useState(false);
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Counter Dapp</title>
-        <meta name="description" content="Counter dapp: an example dapp" />
+        <title>Tokenfactory Issuer UI</title>
+        <meta name="description" content="Tokenfactory Issuer UI" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>Count</h1>
+        <h1 className={styles.title}>Denom</h1>
 
         <p
           className={
             isLoading ? [styles.count, styles.pulse].join(" ") : styles.count
           }
         >
-          {count === undefined ? "?" : count}
+          {denom === undefined ? "?" : denom}
         </p>
 
         {error ? <p className={styles.error}>Error: {error.message}</p> : <></>}
-
+        {/* 
         <div className={styles.grid}>
           <a
             className={styles.card}
@@ -40,7 +40,7 @@ const Home: NextPage = () => {
           >
             <h2>＋ Increase Counter</h2>
           </a>
-        </div>
+        </div> */}
       </main>
     </div>
   );
