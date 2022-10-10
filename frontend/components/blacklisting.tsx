@@ -149,7 +149,7 @@ const SetBlacklisterForm = ({ denom }: { denom: string }) => {
 };
 
 const BlacklistForm = ({ denom }: { denom: string }) => {
-  const { mutate } = useBlacklisterAllowances();
+  const { mutate } = useBlacklistees();
   const {
     handleSubmit,
     register,
