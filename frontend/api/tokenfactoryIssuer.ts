@@ -38,6 +38,11 @@ export const useMintAllowances = () =>
     const client = await getTokenIssuerQueryClient();
     return await client.mintAllowances({});
   });
+export const useBurnAllowances = () =>
+  useSWR("/tokenfactory-issuer/burn-allowances", async () => {
+    const client = await getTokenIssuerQueryClient();
+    return await client.burnAllowances({});
+  });
 
 export const useBlacklisterAllowances = () =>
   useSWR("/tokenfactory-issuer/blackister-allowances", async () => {

@@ -158,7 +158,7 @@ const MintForm = ({ denom }: { denom: string }) => {
       <Divider />
       <form onSubmit={handleSubmit(onSubmit)}>
         <FormControl isRequired my="5">
-          <FormLabel>Mint amount</FormLabel>
+          <FormLabel>mint amount</FormLabel>
           <Input
             type="number"
             id="amount"

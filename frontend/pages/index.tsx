@@ -18,6 +18,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useDenom, useOwner } from "../api/tokenfactoryIssuer";
 import Blacklistng from "../components/blacklisting";
+import Burning from "../components/burning";
 import Minting from "../components/minting";
 
 const Home: NextPage = () => {
@@ -66,7 +67,7 @@ const Home: NextPage = () => {
               <Blacklistng></Blacklistng>
             </TabPanel>
             <TabPanel>
-              <p>burn</p>
+              <Burning></Burning>
             </TabPanel>
           </TabPanels>
         </Tabs>
