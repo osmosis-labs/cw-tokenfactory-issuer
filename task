@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+GROUP_CONTRACT_ADDR=$(cat $SCRIPT_DIR/.beaker/state.local.json | jq '.local."cw4-group".addresses.default' | sed 's/"//g') 
+MULTISIG_CONTRACT_ADDR=$(cat $SCRIPT_DIR/.beaker/state.local.json | jq '.local."cw3-flex-multisig".addresses.default' | sed 's/"//g') 
+TOKENFACTORY_ISSUER_CONTRACT_ADDR=$(cat $SCRIPT_DIR/.beaker/state.local.json | jq '.local."tokenfactory-issuer".addresses.default' | sed 's/"//g') 
+
+cw4_group_exec() {
+    local msg="$1"
+    beaker wasm execute cw4-group --signer-account test1 --raw "$msg"
+}
+cw4_group_query() {
+    local msg="$1"
+    beaker wasm query cw4-group --raw "$msg"
+}
+
+cw3_flex_multisig_exec() {
+    local msg="$1"
+    beaker wasm execute cw3-flex-multisig --signer-account test1 --raw "$msg"
+}
+cw3_flex_multisig_query() {
+    local msg="$1"
+    beaker wasm query cw3-flex-multisig --signer-account test1 --raw "$msg"
+}
+
+tokenfactory_issuer_exec() {
+    local msg="$1"
+    beaker wasm execute tokenfactory-issuer --signer-account test1 --raw "$msg"
+}
+
+tokenfactory_issuer_query() {
+    local msg="$1"
+    beaker wasm query tokenfactory-issuer --raw "$msg"
+}
+
+
+TASK=$1
+ARGS=${@:2}
+
+
+## tasks
+help__group_members="list all members of the group"
+task__group_members() {
+    cw4_group_query '{ "list_members": {} }'
+}
+
+help__group_admin="show group admin"
+task__group_admin() {
+    cw4_group_query '{ "admin": {} }'
+}
+
+help__token_factory_issuer_change_owner_to_multisig="change tokenfactory-issuer owner to multisig"
+task__token_factory_issuer_change_owner_to_multisig() {
+  local msg
+  read -r -d '' msg <<- EOF
+  {
+     "change_contract_owner": { "new_owner": "$MULTISIG_CONTRACT_ADDR" }
+  }
+EOF
+
+    tokenfactory_issuer_exec "$msg"
+}
+
+
+help__propose_mint="propose mint"
+task__propose_mint() {
+  local msg
+  local mint_allowance
+  local mint1
+  local mint2
+
+  read -r -d '' mint_allowance <<- EOF
+  {
+    "set_minter": {
+      "address": "$MULTISIG_CONTRACT_ADDR",
+      "allowance": "2000000000000"
+    }
+  }
+EOF
+  mint_allowance=$(echo "$mint_allowance" | base64)
+
+  read -r -d '' mint1 <<- EOF
+  {
+    "mint": {
+      "to_address": "osmo1cyyzpxplxdzkeea7kwsydadg87357qnahakaks",
+      "amount": "1000000000000"
+    }
+  }
+EOF
+  mint1=$(echo "$mint1" | base64)
+
+  read -r -d '' mint2 <<- EOF
+  {
+    "mint": {
+      "to_address": "osmo18s5lynnmx37hq4wlrw9gdn68sg2uxp5rgk26vv",
+      "amount": "1000000000000"
+    }
+  }
+EOF
+  mint2=$(echo "$mint2" | base64)
+
+  
+
+  read -r -d '' msg <<- EOF
+  {
+    "propose": {
+      "title": "mint new tokens",
+      "description": "mint 1,000,000.000000 tokens to test1 and test2 each",
+      "msgs": [
+        {
+          "wasm": {
+            "execute": {
+              "contract_addr": "$TOKENFACTORY_ISSUER_CONTRACT_ADDR",
+              "msg": "$mint_allowance",
+              "funds": []
+            }
+          }
+        },
+        {
+          "wasm": {
+            "execute": {
+              "contract_addr": "$TOKENFACTORY_ISSUER_CONTRACT_ADDR",
+              "msg": "$mint1",
+              "funds": []
+            }
+          }
+        },
+        {
+          "wasm": {
+            "execute": {
+              "contract_addr": "$TOKENFACTORY_ISSUER_CONTRACT_ADDR",
+              "msg": "$mint2",
+              "funds": []
+            }
+          }
+        }
+      ],
+      "latest": { "never": {}}
+    }
+  }
+EOF
+  
+    echo "$mint_allowance" | base64 -d | jq .
+    echo "$mint1" | base64 -d | jq .
+    echo "$mint2" | base64 -d | jq .
+
+    cw3_flex_multisig_exec "$msg"
+}
+
+
+# list proposals
+
+help__list_proposals="list proposals"
+task__list_proposals() {
+  local ps=$(cw3_flex_multisig_query '{ "list_proposals": {} }')
+  echo "$ps" | tail -n +7 | jq .
+}
+
+help__vote_proposal="vote proposal"
+task__vote_proposal() {
+  signer="$1"
+  id="$2"
+  vote="$3"
+  beaker wasm execute cw3-flex-multisig --signer-account "$signer" --raw "{\"vote\": { \"proposal_id\": $id, \"vote\": \"$vote\" }}"
+}
+
+
+help__execute_proposal="execute proposal"
+task__execute_proposal() {
+  signer="$1"
+  id="$2"
+  beaker wasm execute cw3-flex-multisig --signer-account "$signer" --raw "{\"execute\": { \"proposal_id\": $id }}"
+}
+
+
+
+
+
+## main
+
+list_all_helps() {
+  compgen -v | egrep "^help__.*"
+}
+
+NEW_LINE=$'\n'
+if type -t "task__$TASK" &>/dev/null; then
+  task__$TASK $ARGS
+else
+  echo "usage: $0 <task> [<..args>]"
+  echo "task:"
+
+  HELPS=""
+  for help in $(list_all_helps)
+  do
+
+    HELPS="$HELPS    ${help/help__/} |-- ${!help}$NEW_LINE"
+  done
+
+  echo "$HELPS" | column -t -s "|"
+  exit 
+fi
+

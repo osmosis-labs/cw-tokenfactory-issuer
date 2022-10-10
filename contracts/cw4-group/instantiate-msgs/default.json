@@ -1,0 +1,17 @@
+{
+    "admin": "osmo1cyyzpxplxdzkeea7kwsydadg87357qnahakaks",
+    "members": [
+        {
+            "addr": "osmo1cyyzpxplxdzkeea7kwsydadg87357qnahakaks",
+            "weight": 1
+        },
+        {
+            "addr": "osmo18s5lynnmx37hq4wlrw9gdn68sg2uxp5rgk26vv",
+            "weight": 1
+        },
+        {
+            "addr": "osmo1qwexv7c6sm95lwhzn9027vyu2ccneaqad4w8ka",
+            "weight": 1
+        }
+    ]
+}
