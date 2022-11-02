@@ -2,7 +2,7 @@
 authors = ["Maurits Bos <maurits.bos@gmail.com>", "Sunny Aggarwal <sunny@osmsosis.team>"]
 edition = "2018"
 name = "tokenfactory-issuer"
-version = "0.1.0"
+version = "0.1.0-migration-testdata"
 
 exclude = [
   # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
@@ -45,3 +45,4 @@ thiserror = {version = "1.0.31"}
 cosmwasm-schema = "1.0.0"
 cw-multi-test = "0.13.2"
 osmosis-testing = {git = "https://github.com/osmosis-labs/osmosis-rust", branch = "boss/tokenfactory-ext"}
+serde_json = "1.0.87"
