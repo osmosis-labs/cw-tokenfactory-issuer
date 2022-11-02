@@ -86,7 +86,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // freeze contract for testing
-    IS_FROZEN.save(deps.storage, &false)?;
+    IS_FROZEN.save(deps.storage, &true)?;
 
     Ok(Response::new()
         .add_attribute("action", "migrate")
